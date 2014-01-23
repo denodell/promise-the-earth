@@ -1,14 +1,18 @@
 Promises, Promises
 ==================
 
-A simple JavaScript implementation of the Promises/A+ spec: http://promisesaplus.com/
+A simple, fully-compliant JavaScript implementation of the Promises/A+ spec: http://promisesaplus.com/
 
 Also features the `Promise.all()` method from ES6 Promises - because it's great.
 
+Clocks in at 1.66KB minified (686 bytes gzipped).
+
 ## Usage
 ```
-<script src="promise.js"></script>
+<script src="promise.min.js"></script>
 <script>
+
+    // An asynchronous function that waits a certain number of milliseconds. Returns a promise.
     function wait(delayInMilliseconds) {
         return new Promise(function(success, failure) {
             if (delayInMilliseconds <= 0) {
@@ -21,6 +25,7 @@ Also features the `Promise.all()` method from ES6 Promises - because it's great.
         });
     }
 
+    // Wait for 2 seconds, then execute onSuccess(). If an error occurs, execute onError instead.
     function onSuccess(waitTimeInMilliseconds) {
         console.log("Waited for " + waitTimeInMilliseconds + "ms");
     }
@@ -29,10 +34,15 @@ Also features the `Promise.all()` method from ES6 Promises - because it's great.
         console.log(error);
     }
 
-    // Wait for 2 seconds, then execute onSuccess(). If an error occurs, execute onError instead
     wait(2000).then(onSuccess, onError);
+
+    // 
+    Promise.all([wait(2000), wait(1000), wait(500)], function(values) {
+        console.log("Execution will take 2000 milliseconds as each function is executed simultaneously");
+        console.log(values); // [2000, 1000, 500]
+    })
 </script>
 ```
-## Checking compliance
+## Compliance
 - Install the test suite locally (https://github.com/promises-aplus/promises-tests) using `npm install`.
 - Run the test suite against this library using `npm test`. Everything should pass!

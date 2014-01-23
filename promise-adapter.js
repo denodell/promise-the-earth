@@ -1,4 +1,4 @@
-var Promise = require('./promise.js');
+var Promise = require('./promise.min.js');
 
 // Expose an adapter to use with the Promises/A+ spec test suite
 module.exports = {

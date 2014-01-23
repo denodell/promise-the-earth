@@ -210,36 +210,80 @@ var Promise = (function() {
             }
         },
 
-        // The resolve() method
+        // The resolve() method takes the return value from a successfull call to a promise's
+        // fulfill() callback and uses it to fulfill the promise if it is the last promise in
+        // a chain of then() method calls. If it is not the last promise, it continues down
+        // the promise chain, recursively fulfilling and rejecting the linked promises as
+        // appropriate
         resolve: function(value) {
             var promise = this,
+
+                // Detect the type of the value returned from the fulfill() callback method. If
+                // this is the last promise in a chain, this should be the result of executing
+                // the asynchronous function itself. If this promise has other chained promises
+                // then the value passed to this method will contain another promise which will
+                // call the resolve() method again, recursively
                 valueIsThisPromise = promise === value,
                 valueIsAPromise = value && value.constructor === Promise,
+
+                // The term "thenable" refers to an object that looks like a promise in that it
+                // contains a then() method of its own, yet isn't an instance of this Promise
+                // "class" - useful for connecting promises created by other implementations of
+                // the Promises/A+ spec together
                 valueIsThenable = value && (typeof value === "object" || typeof value === "function"),
+
                 isExecuted = false,
                 then;
 
+            // Reject this promise if the value passed to this method represents the same
+            // promise represented here - otherwise we could potentially get stuck in a loop
             if (valueIsThisPromise) {
-                promise.reject(new TypeError()); // 2.3.1 - return as a TypeError
+
+                // The Promises/A+ spec dictates that should this promise be the same as the
+                // one passed to this method, then a TypeError should be passed to the reject()
+                // method, effectively stopping execution of further promises in the chain
+                promise.reject(new TypeError());
+
+            // If the value passed to the resolve() method is another instance of this Promise
+            // "class", then either fulfill or reject the current promise based on the state of
+            // the provided promise
             } else if (valueIsAPromise) {
 
-                // If the supplied value is a promise, then adopt its state for this promise
+                // If the promise passed into this method has already been fulfilled or
+                // rejected, pass on the value or error contained within it to this promise
                 if (value.state === state.FULFILLED) {
                     promise.fulfill(value.value);
                 } else if (value.state === state.REJECTED) {
                     promise.reject(value.error);
+
+                // If the promise passed into this method hasn't yet been fulfilled or rejected,
+                // execute its then() method to ensure the current promise will get resolved
+                // or rejected along with that promise once it has completed execution of its
+                // asynchronous function
                 } else {
                     value.then(function(value) {
-                        // Carry on down the promise chain
                         promise.resolve(value);
                     }, function(reason) {
                         promise.reject(reason);
                     });
                 }
+
+            // If the value passed to the resolve() method is not an instance of this Promise
+            // "class" but resembles a promise in that it is an object containing its own
+            // then() method, then execute its then() method, fulfilling or rejecting the
+            // current promise based on the state of this promise. This comes in useful when
+            // attempting to connect promises created with other implementations of the same
+            // spec together with this one
             } else if (valueIsThenable) {
+
+                // Wrap execution in a try/catch block in case an error is thrown in the
+                // underlying code of the other promise implementation
                 try {
                     then = value.then;
 
+                    // If the object stored in the value variable contains a then() method,
+                    // execute it to ensure the current promise gets fulfilled or rejected when
+                    // that promise does
                     if (typeof then === "function") {
                         then.call(value, function(successValue) {
                             if (!isExecuted) {
@@ -261,46 +305,67 @@ var Promise = (function() {
                         promise.reject(reason);
                     }
                 }
+
+            // If the value passed to the resolve() method is not a promise, then fulfill the
+            // current promise using its value. Any associated callbacks will then be executed
             } else {
                 promise.fulfill(value);
             }
         }
     };
 
-    // Add a bonus method, all(), which isn't part of the Promises/A+ spec, but is part of the
-    // spec for ECMAScript 6 Promises, which bring the benefits of promises straight into the
-    // JavaScript language itself. This method allows multiple asynchronous methods, represented
-    // as promises, to execute simulataneously and to execute a single callback function at such
-    // time as all of the methods have completed execution.
+    // Add a bonus method, Promise.all(), which isn't part of the Promises/A+ spec, but is part
+    // of the spec for ECMAScript 6 Promises, which bring the benefits of promises straight into
+    // the JavaScript language itself.
+    //
+    // The method accepts an array of promises, each representing an asynchronous function,
+    // which are executed simultaneously, and returns a single promise, allowing a single
+    // then() method to be executed at such point all the supplied promsies are fulfilled. The
+    // value passed on fulfillment contains an array of all the returned values of the
+    // individual promises, in the same order as the promises in the original array passed to
+    // this method
     Promise.all = function(promises) {
         var index = 0,
-            length = promises.length;
+            promiseCount = promises.length;
 
+        // Return a single promise representing all the promises supplied to this method. It
+        // will be fulfilled as soon as every one of the supplied promises have been fulfilled.
         return new Promise(function(fulfill, reject) {
             var promise,
-                results = [];
+                results = [],
+                resultsCount = 0;
 
-            function callback(result, index) {
+            // Execute an onSuccess() function each time one of the supplied promises is
+            // fulfilled, adding its resulting value to an array in the same index position as
+            // the promise was in the original array
+            function onSuccess(result, index) {
                 results[index] = result;
+                resultsCount++;
 
-                if (results.length === length) {
+                // If we have collected the results for all of the promises, then fulfill the
+                // current single promise, passing across the array of fulfilled values from
+                // the individual promises
+                if (resultsCount === promiseCount) {
                     fulfill(results);
                 }
             }
 
-            function errorCallback(error) {
+            // If any of the supplied promises are rejected, then reject the current promise
+            function onError(error) {
                 reject(error);
             }
 
-            function resolvePromise(promise, index) {
-                promise.then(function(result) {
-                    callback(result, index);
-                }, errorCallback);
+            // Resolve a given promise, executing onSuccess() if fulfilled, or onError() if not
+            function resolvePromise(index, promise) {
+                promise.then(function(value) {
+                    onSuccess(value, index);
+                }, onError);
             }
 
-            for (; index < length; index++) {
+            // Loop through all the promises supplied to this method, resolving each in turn
+            for (; index < promiseCount; index++) {
                 promise = promises[index];
-                resolvePromise(promise, index);
+                resolvePromise(index, promise);
             }
         });
     };
