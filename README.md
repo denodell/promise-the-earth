@@ -5,7 +5,7 @@ A simple, fully-compliant JavaScript implementation of the Promises/A+ spec: htt
 
 Also features the `Promise.all()` method from ES6 Promises - because it's great.
 
-Clocks in at 1.66KB minified (686 bytes gzipped).
+Clocks in at 1.67KB minified (696 bytes gzipped).
 
 ## Usage
 ```

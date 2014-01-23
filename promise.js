@@ -373,6 +373,6 @@ var Promise = (function() {
     return Promise;
 }());
 
-if (module && module.exports) {
+if (typeof module === "object" && module.exports) {
     module.exports = Promise;
 }
