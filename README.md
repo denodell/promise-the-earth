@@ -1,4 +1,4 @@
 promises-promises
 =================
 
-JavaScript implementation of the Promises/A+ spec
+A simple JavaScript implementation of the Promises/A+ spec
