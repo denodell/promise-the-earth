@@ -17,11 +17,11 @@ Clocks in at 1.66KB minified (686 bytes gzipped).
         return new Promise(function(success, failure) {
             if (delayInMilliseconds <= 0) {
                 failure(delayInMilliseconds + " is not a valid value.");
+            } else {
+                setTimeout(function() {
+                    success(delayInMilliseconds);
+                }, delayInMilliseconds);
             }
-
-            setTimeout(function() {
-                success(delayInMilliseconds);
-            }, delayInMilliseconds);
         });
     }
 
