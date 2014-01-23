@@ -36,7 +36,7 @@ Clocks in at 1.66KB minified (686 bytes gzipped).
 
     wait(2000).then(onSuccess, onError);
 
-    // 
+    // Execute multiple asynchronous functions simultaneously
     Promise.all([wait(2000), wait(1000), wait(500)], function(values) {
         console.log("Execution will take 2000 milliseconds as each function is executed simultaneously");
         console.log(values); // [2000, 1000, 500]
