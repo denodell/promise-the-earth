@@ -1,6 +1,25 @@
 {
-    "name": "promises-promises",
-    "version": "1.0.0",
+    "name": "promise-the-earth",
+    "description": "A simple, fully-compliant JavaScript implementation of the Promises/A+ spec",
+    "version": "0.0.1",
+    "author": {
+        "name": "denodell",
+        "email": "denodell@me.com"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/denodell/promise-the-earth.git"
+    },
+    "bugs": {
+        "url": "https://github.com/denodell/promise-the-earth/issues"
+    },
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "https://github.com/denodell/promise-the-earth/blob/master/LICENSE"
+        }
+    ],
+    "main": "promise.js",
     "devDependencies": {
         "promises-aplus-tests": "~2.0.3"
     },

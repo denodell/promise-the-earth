@@ -1,5 +1,5 @@
-Promises, Promises
-==================
+Promise The Earth
+=================
 
 A simple, fully-compliant JavaScript implementation of the Promises/A+ spec: http://promisesaplus.com/
 
